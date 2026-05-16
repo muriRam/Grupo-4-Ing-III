@@ -2,10 +2,16 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import FileUpload from './FileUpload'
 import './App.css'
 
 function App() {
+  const [showUpload, setShowUpload] = useState(true)
   const [count, setCount] = useState(0)
+
+  if (showUpload) {
+    return <FileUpload onContinue={() => setShowUpload(false)} />
+  }
 
   return (
     <>
