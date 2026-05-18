@@ -4,39 +4,50 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 // @ts-ignore: importing a manual JSX component without a declaration file
 import WordCloud from './WordCloud.jsx'
+import FileUpload from './FileUpload'
+
 import './App.css'
+import { FranjaHorariaGraph } from './components/graphs'
 
 function App() {
+  const [showUpload, setShowUpload] = useState(true)
   const [count, setCount] = useState(0)
+
   const sampleWords = [
-  { text: 'hola', count: 10 },
-  { text: 'grupo', count: 7 },
-  { text: 'mensaje', count: 5 },
-  { text: 'gracias', count: 9 },
-  { text: 'jaja', count: 14 },
-  { text: 'buenas', count: 8 },
-  { text: 'igual', count: 6 },
-  { text: 'okay', count: 11 },
-  { text: 'claro', count: 9 },
-  { text: 'también', count: 7 },
-  { text: 'mañana', count: 6 },
-  { text: 'cuando', count: 5 },
-  { text: 'bien', count: 13 },
-  { text: 'dale', count: 12 },
-  { text: 'favor', count: 4 },
-  { text: 'noche', count: 6 },
-  { text: 'tarde', count: 5 },
-  { text: 'espera', count: 4 },
-  { text: 'perfecto', count: 8 },
-  { text: 'Nico', count: 32 },
-]
+    { text: 'hola', count: 10 },
+    { text: 'grupo', count: 7 },
+    { text: 'mensaje', count: 5 },
+    { text: 'gracias', count: 9 },
+    { text: 'jaja', count: 14 },
+    { text: 'buenas', count: 8 },
+    { text: 'igual', count: 6 },
+    { text: 'okay', count: 11 },
+    { text: 'claro', count: 9 },
+    { text: 'también', count: 7 },
+    { text: 'mañana', count: 6 },
+    { text: 'cuando', count: 5 },
+    { text: 'bien', count: 13 },
+    { text: 'dale', count: 12 },
+    { text: 'favor', count: 4 },
+    { text: 'noche', count: 6 },
+    { text: 'tarde', count: 5 },
+    { text: 'espera', count: 4 },
+    { text: 'perfecto', count: 8 },
+    { text: 'Nico', count: 32 },
+  ]
+
+  if (showUpload) {
+    return <FileUpload onContinue={() => setShowUpload(false)} />
+  }
+
   return (
     <>
-     <section id="word-cloud">
+      <section id="word-cloud">
         <h2>Nube de palabras</h2>
         <WordCloud words={sampleWords} />
       </section>
 
+      <FranjaHorariaGraph />
       <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
