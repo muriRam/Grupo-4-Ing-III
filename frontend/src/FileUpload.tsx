@@ -159,7 +159,7 @@ function FileUpload({ onContinue }: FileUploadProps) {
 
   const isWhatsappExportLine = (line: string) => {
     const trimmedLine = line.replace(/^\uFEFF/, "").trim();
-    return /^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2} - /.test(trimmedLine);
+    return /^\d{1,2}\/\d{1,2}\/\d{4}, \d{2}:\d{2} - /.test(trimmedLine);
   };
 
   const hasValidWhatsappLine = (text: string) => {
