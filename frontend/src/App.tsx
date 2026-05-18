@@ -7,7 +7,7 @@ import WordCloud from "./WordCloud.jsx";
 import FileUpload from "./FileUpload";
 
 import "./App.css";
-import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph } from "./components/graphs";
+import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, MensajesPorUsuarioGraph } from "./components/graphs";
 
 function App() {
   const [showUpload, setShowUpload] = useState(true);
@@ -47,6 +47,7 @@ function App() {
         <WordCloud words={sampleWords} />
       </section>
 
+      <MensajesPorUsuarioGraph />
       <FranjaHorariaGraph />
       <EmojiGraph />
       <DiasSemanaGraph />
