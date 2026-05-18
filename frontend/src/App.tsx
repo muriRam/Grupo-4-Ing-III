@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import FileUpload from './FileUpload'
 import './App.css'
+import { FranjaHorariaGraph } from './components/graphs'
 
 function App() {
   const [showUpload, setShowUpload] = useState(true)
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <>
+      <FranjaHorariaGraph />
       <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
