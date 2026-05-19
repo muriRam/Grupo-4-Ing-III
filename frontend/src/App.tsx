@@ -2,11 +2,7 @@ import { useState } from "react";
 
 import FileUpload from "./FileUpload";
 
-<<<<<<< HEAD
 import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, MensajesPorUsuarioGraph, WordCloud } from "./components/graphs";
-=======
-import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, WordCloud } from "./components/graphs";
->>>>>>> 140e4e39ca9cc2fe8bea061154f2ad0533903ddd
 
 function App() {
   const [showUpload, setShowUpload] = useState(true);
