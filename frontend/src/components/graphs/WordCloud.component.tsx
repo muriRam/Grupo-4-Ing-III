@@ -76,8 +76,8 @@ function WordCloud({ words }: WordCloudProps) {
 
       let angle = 0
       let radius = 0
-      let placedX = centerX
-      let placedY = centerY
+      let placedX 
+      let placedY 
 
       while (radius < Math.max(width, height)) {
         placedX = centerX + Math.cos(angle) * radius
@@ -119,4 +119,4 @@ function WordCloud({ words }: WordCloudProps) {
   )
 }
 
-export default WordCloud
+export { WordCloud }

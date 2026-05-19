@@ -8,7 +8,7 @@ export const FranjaHorariaGraph = () => {
     useEffect(() => {
         if (!canvasRef.current) return
         const chart = new Chart(canvasRef.current, {
-            type: 'bar',
+            type: 'polarArea',
             data: {
                 labels: [
                     '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
