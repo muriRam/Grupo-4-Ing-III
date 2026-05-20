@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import { useRef, useState } from "react";
 import type { ChangeEvent, CSSProperties, DragEvent } from "react";
+import { hasValidWhatsappLine } from "./utils/whatsapp";
 
 type FileUploadProps = {
   onContinue: () => void;
@@ -155,16 +156,6 @@ function FileUpload({ onContinue }: FileUploadProps) {
       "Elegí Sin medios",
       "Tocá Guardar en Archivos > En mi iPhone y guardalo localmente",
     ],
-  };
-
-  const isWhatsappExportLine = (line: string) => {
-    const trimmedLine = line.replace(/^\uFEFF/, "").trim();
-    return /^\d{1,2}\/\d{1,2}\/\d{4}, \d{2}:\d{2} - /.test(trimmedLine);
-  };
-
-  const hasValidWhatsappLine = (text: string) => {
-    const lines = text.split(/\r?\n/).slice(0, 120);
-    return lines.some((line) => isWhatsappExportLine(line));
   };
 
   const validateTextFile = async (file: File) => {
