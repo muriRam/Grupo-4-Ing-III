@@ -19,7 +19,7 @@ Ruival Jose
 ## Instalación y ejecución
 Clonar el repositorio:  
 ```bash
-git clone
+git clone https://github.com/muriRam/Grupo-4-Ing-III.git
 ```
 Instalar dependencias:  
 Pararse sobre las respectivas carpeta (backend y frontend) y en cada una ejecutar
