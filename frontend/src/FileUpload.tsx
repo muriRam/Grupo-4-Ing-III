@@ -4,7 +4,7 @@ import type { ChangeEvent, CSSProperties, DragEvent } from "react";
 import { hasValidWhatsappLine } from "./utils/whatsapp";
 
 type FileUploadProps = {
-  onContinue: () => void;
+  onContinue: (chatText: string) => void;
 };
 
 function FileUpload({ onContinue }: FileUploadProps) {
@@ -158,12 +158,12 @@ function FileUpload({ onContinue }: FileUploadProps) {
     ],
   };
 
-  const validateTextFile = async (file: File) => {
+  const extractTextFile = async (file: File): Promise<string | null> => {
     const text = await file.text();
-    return hasValidWhatsappLine(text);
+    return hasValidWhatsappLine(text) ? text : null;
   };
 
-  const validateZipFile = async (file: File) => {
+  const extractZipFile = async (file: File): Promise<string | null> => {
     const zip = await JSZip.loadAsync(file);
     const entries = Object.values(zip.files);
     const textEntry = entries.find(
@@ -171,29 +171,29 @@ function FileUpload({ onContinue }: FileUploadProps) {
     );
 
     if (!textEntry) {
-      return false;
+      return null;
     }
 
     const text = await textEntry.async("string");
-    return hasValidWhatsappLine(text);
+    return hasValidWhatsappLine(text) ? text : null;
   };
 
-  const validateSelectedFile = async () => {
+  const extractChatText = async (): Promise<string | null> => {
     if (!selectedFile) {
-      return false;
+      return null;
     }
 
     const extension = selectedFile.name.toLowerCase();
 
     if (extension.endsWith(".txt")) {
-      return validateTextFile(selectedFile);
+      return extractTextFile(selectedFile);
     }
 
     if (extension.endsWith(".zip")) {
-      return validateZipFile(selectedFile);
+      return extractZipFile(selectedFile);
     }
 
-    return false;
+    return null;
   };
 
   const clearSelectedFile = () => {
@@ -206,16 +206,16 @@ function FileUpload({ onContinue }: FileUploadProps) {
   };
 
   const onContinueClick = async () => {
-    const isValid = await validateSelectedFile();
+    const chatText = await extractChatText();
 
-    if (!isValid) {
+    if (!chatText) {
       setErrorMessage(
         "El archivo no parece ser un chat exportado de WhatsApp. Por favor subi un archivo .txt o .zip valido.",
       );
       return;
     }
 
-    onContinue();
+    onContinue(chatText);
   };
 
   return (

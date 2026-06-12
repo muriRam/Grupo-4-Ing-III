@@ -1,6 +1,6 @@
 export const isWhatsappExportLine = (line: string): boolean => {
-  const trimmedLine = line.replace(/^﻿/, '').trim()
-  return /^\d{1,2}\/\d{1,2}\/\d{4}, \d{2}:\d{2} - /.test(trimmedLine)
+  const trimmedLine = line.replace(/^\uFEFF/, '').trim()
+  return /^\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}\s?([AaPp][Mm])? - /.test(trimmedLine)
 }
 
 export const hasValidWhatsappLine = (text: string): boolean => {
