@@ -8,6 +8,7 @@ export interface ParsedMessage {
 
 export interface ChatData {
   franjaHoraria: number[]
+  wordCloud: { text: string; count: number }[]
 }
 
 const MESSAGE_REGEX = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4}), (\d{1,2}):(\d{2})\s?([AaPp][Mm])? - ([^:\r\n]+): (.*)/
@@ -55,10 +56,37 @@ export function getFranjaHoraria(messages: ParsedMessage[]): number[] {
   return counts
 }
 
+export function getWordCloud(messages: ParsedMessage[]): { text: string; count: number }[] {
+  
+  // Une todos los mensajes en un solo string separado por espacios
+  const allText = messages.map(m => m.mensaje).join(' ')
+  // Elimina signos de puntuación reemplazándolos por espacios y convierte a minúsculas
+  const cleaned = allText
+    .replace(/[".,!?;:\-()\[\]{}<>\/\\=+*&^%$#@~`|«»—–…¿¡]/g, ' ')
+    .toLowerCase()
+  // Separa en palabras cortando por espacios en blanco
+  const words = cleaned.split(/\s+/).map(w => w.trim())
+
+  const freq = new Map<string, number>()
+  for (const w of words) {
+    // Descarta vacíos, palabras cortas y tokens numéricos
+    if (!w) continue
+    if (w.length < 3) continue
+    if (/^\d+$/.test(w)) continue  
+    // Suma 1 a la frecuencia de la palabra, o la inicializa en 1
+    freq.set(w, (freq.get(w) || 0) + 1)
+  }
+  // Convierte el Map a array de objetos { text, count }
+  const arr = Array.from(freq.entries()).map(([text, count]) => ({ text, count }))
+  arr.sort((a, b) => b.count - a.count)
+  return arr.slice(0, 50)
+}
+
 export function buildChatData(text: string): ChatData {
   const messages = parseMessages(text)
   return {
     franjaHoraria: getFranjaHoraria(messages),
+    wordCloud: getWordCloud(messages),
   }
 }
 
