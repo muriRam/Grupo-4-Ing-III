@@ -2,9 +2,14 @@ import { useState } from "react";
 
 import FileUpload from "./FileUpload";
 
-import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, MensajesPorUsuarioGraph, WordCloud } from "./components/graphs";
+import {
+  EmojiGraph,
+  FranjaHorariaGraph,
+  DiasSemanaGraph,
+  MensajesPorUsuarioGraph,
+  WordCloud,
+} from "./components/graphs";
 import { buildChatData, type ChatData } from "./utils/whatsappParser";
-
 
 function App() {
   const [chatData, setChatData] = useState<ChatData | null>(null);
@@ -40,7 +45,7 @@ function App() {
 
       <article id="emoji-graph">
         <h2>Emojis mas utilizados</h2>
-        <EmojiGraph />
+        <EmojiGraph data={chatData.emojisMasUsados} />
       </article>
 
       <article id="dias-semana">
