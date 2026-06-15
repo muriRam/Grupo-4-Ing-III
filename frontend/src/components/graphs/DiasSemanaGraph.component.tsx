@@ -2,7 +2,11 @@ import { Chart, registerables } from 'chart.js';
 import { useEffect, useRef } from 'react';
 Chart.register(...registerables);
 
-export const DiasSemanaGraph = () => {
+type Props = {
+    data: number[]
+}
+
+export const DiasSemanaGraph = ({ data }: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -13,7 +17,7 @@ export const DiasSemanaGraph = () => {
                 labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
                 datasets: [{
                     label: 'Cantidad de mensajes',
-                    data: [142, 168, 195, 183, 210, 97, 74]
+                    data,
                 }]
             },
             options: {
@@ -26,6 +30,6 @@ export const DiasSemanaGraph = () => {
             }
         })
         return () => chart.destroy()
-    }, [])
+    }, [data])
     return <canvas ref={canvasRef} />
 }
