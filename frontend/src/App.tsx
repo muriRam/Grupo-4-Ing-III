@@ -33,9 +33,9 @@ function App() {
         <WordCloud words={chatData.wordCloud} />
       </article>
 
-      <article id="word-cloud">
+      <article id="mensajes-por-usuario">
         <h2>Mensajes por usuario</h2>
-        <MensajesPorUsuarioGraph />
+        <MensajesPorUsuarioGraph data={chatData.mensajesPorUsuario} />
       </article>
 
       <article id="franja-horaria">

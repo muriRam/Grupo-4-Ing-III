@@ -11,6 +11,7 @@ export interface ChatData {
   wordCloud: { text: string; count: number }[];
   emojisMasUsados: { emoji: string; count: number }[];
   diasSemana: number[];
+  mensajesPorUsuario: { usuario: string; cantidad: number }[];
 }
 
 const MESSAGE_REGEX =
@@ -158,5 +159,6 @@ export function buildChatData(text: string): ChatData {
     wordCloud: getWordCloud(messages),
     emojisMasUsados: getEmojisMasUsados(messages),
     diasSemana: getDiasSemana(messages),
+    mensajesPorUsuario: getMensajesPorUsuario(messages),
   };
 }
