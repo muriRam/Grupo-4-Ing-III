@@ -10,6 +10,7 @@ export interface ChatData {
   franjaHoraria: number[];
   wordCloud: { text: string; count: number }[];
   emojisMasUsados: { emoji: string; count: number }[];
+  diasSemana: number[];
 }
 
 const MESSAGE_REGEX =
@@ -107,11 +108,20 @@ export function getEmojisMasUsados(
   return arr.slice(0, 10);
 }
 
+export function getDiasSemana(messages: ParsedMessage[]): number[] {
+  const counts = new Array<number>(7).fill(0);
+  for (const msg of messages) {
+    counts[msg.diaSemana]++;
+  }
+  return counts;
+}
+
 export function buildChatData(text: string): ChatData {
   const messages = parseMessages(text);
   return {
     franjaHoraria: getFranjaHoraria(messages),
     wordCloud: getWordCloud(messages),
     emojisMasUsados: getEmojisMasUsados(messages),
+    diasSemana: getDiasSemana(messages),
   };
 }

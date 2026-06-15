@@ -50,7 +50,7 @@ function App() {
 
       <article id="dias-semana">
         <h2>Cantidad de mensajes por dia de la semana</h2>
-        <DiasSemanaGraph />
+        <DiasSemanaGraph data={chatData.diasSemana} />
       </article>
     </main>
   );
