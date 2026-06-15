@@ -11,6 +11,7 @@ export interface ChatData {
   wordCloud: { text: string; count: number }[];
   emojisMasUsados: { emoji: string; count: number }[];
   diasSemana: number[];
+  mensajesPorUsuario: { usuario: string; cantidad: number }[];
 }
 
 const MESSAGE_REGEX =
@@ -116,6 +117,41 @@ export function getDiasSemana(messages: ParsedMessage[]): number[] {
   return counts;
 }
 
+// Cuenta cuántos mensajes envió cada usuario y los ordena de mayor a menor.
+export function getMensajesPorUsuario(
+  messages: ParsedMessage[],
+): { usuario: string; cantidad: number }[] {
+  const conteo = new Map<string, number>();
+  for (const msg of messages) {
+    conteo.set(msg.usuario, (conteo.get(msg.usuario) || 0) + 1);
+  }
+
+  const arr = Array.from(conteo.entries()).map(([usuario, cantidad]) => ({
+    usuario,
+    cantidad,
+  }));
+  arr.sort((a, b) => b.cantidad - a.cantidad);
+  return arr;
+}
+
+// Usuario que más mensajes envió (el primero de la lista ordenada).
+export function getUsuarioQueMasEnvio(
+  messages: ParsedMessage[],
+): { usuario: string; cantidad: number } | null {
+  const conteo = getMensajesPorUsuario(messages);
+  if (conteo.length === 0) return null;
+  return conteo[0];
+}
+
+// Usuario que menos mensajes envió (el último de la lista ordenada).
+export function getUsuarioQueMenosEnvio(
+  messages: ParsedMessage[],
+): { usuario: string; cantidad: number } | null {
+  const conteo = getMensajesPorUsuario(messages);
+  if (conteo.length === 0) return null;
+  return conteo[conteo.length - 1];
+}
+
 export function buildChatData(text: string): ChatData {
   const messages = parseMessages(text);
   return {
@@ -123,5 +159,6 @@ export function buildChatData(text: string): ChatData {
     wordCloud: getWordCloud(messages),
     emojisMasUsados: getEmojisMasUsados(messages),
     diasSemana: getDiasSemana(messages),
+    mensajesPorUsuario: getMensajesPorUsuario(messages),
   };
 }
