@@ -142,6 +142,15 @@ export function getUsuarioQueMasEnvio(
   return conteo[0];
 }
 
+// Usuario que menos mensajes envió (el último de la lista ordenada).
+export function getUsuarioQueMenosEnvio(
+  messages: ParsedMessage[],
+): { usuario: string; cantidad: number } | null {
+  const conteo = getMensajesPorUsuario(messages);
+  if (conteo.length === 0) return null;
+  return conteo[conteo.length - 1];
+}
+
 export function buildChatData(text: string): ChatData {
   const messages = parseMessages(text);
   return {

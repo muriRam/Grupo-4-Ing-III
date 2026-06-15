@@ -3,6 +3,7 @@ import {
   parseMessages,
   getMensajesPorUsuario,
   getUsuarioQueMasEnvio,
+  getUsuarioQueMenosEnvio,
 } from './whatsappParser'
 
 // Chat de ejemplo: Juan envía 3 mensajes, Maria 2 y Pedro 1.
@@ -45,5 +46,16 @@ describe('getUsuarioQueMasEnvio', () => {
 
   it('devuelve null si no hay mensajes', () => {
     expect(getUsuarioQueMasEnvio([])).toBeNull()
+  })
+})
+
+describe('getUsuarioQueMenosEnvio', () => {
+  it('devuelve el usuario que menos mensajes envió', () => {
+    const mensajes = parseMessages(chatEjemplo)
+    expect(getUsuarioQueMenosEnvio(mensajes)).toEqual({ usuario: 'Pedro', cantidad: 1 })
+  })
+
+  it('devuelve null si no hay mensajes', () => {
+    expect(getUsuarioQueMenosEnvio([])).toBeNull()
   })
 })
