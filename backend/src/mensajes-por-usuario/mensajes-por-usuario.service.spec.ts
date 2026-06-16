@@ -49,13 +49,18 @@ describe('MensajesPorUsuarioService', () => {
     ]);
   });
 
-  it('ignora los mensajes del sistema y multimedia (formato iPhone)', () => {
+  it('cuenta los multimedia pero ignora los mensajes del sistema (formato iPhone)', () => {
     const chat = [
-      '[22/6/24, 13:27:54] Grupo: ' + lrm + 'Los mensajes están cifrados',
+      '[22/6/24, 13:27:54] Grupo: ' + lrm + 'Los mensajes y las llamadas están cifrados de extremo a extremo.',
+      '[22/6/24, 13:27:55] Grupo: ' + lrm + 'Martin te añadió',
       lrm + '[22/6/24, 13:28:00] Juan: ' + lrm + 'audio omitido',
       '[22/6/24, 13:29:00] Juan: Hola de verdad',
+      '[22/6/24, 13:30:00] Maria: ' + lrm + 'sticker omitido',
     ].join('\n');
     const r = service.analizar(chat);
-    expect(r.mensajesPorUsuario).toEqual([{ usuario: 'Juan', cantidad: 1 }]);
+    expect(r.mensajesPorUsuario).toEqual([
+      { usuario: 'Juan', cantidad: 2 },
+      { usuario: 'Maria', cantidad: 1 },
+    ]);
   });
 });
