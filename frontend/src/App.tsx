@@ -3,7 +3,10 @@ import { useState } from "react";
 import FileUpload from "./FileUpload";
 
 import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, MensajesPorUsuarioGraph, WordCloud } from "./components/graphs";
-import { buildChatData, type ChatData } from "./utils/whatsappParser";
+
+interface AnalyzeResult {
+  franjaHoraria: number[];
+}
 
 const sampleWords = [
   { text: "hola", count: 10 },
@@ -29,13 +32,19 @@ const sampleWords = [
 ];
 
 function App() {
-  const [chatData, setChatData] = useState<ChatData | null>(null);
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
 
-  const handleContinue = (chatText: string) => {
-    setChatData(buildChatData(chatText));
+  const handleContinue = async (chatText: string) => {
+    const response = await fetch("http://localhost:3000/whatsapp/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: chatText }),
+    });
+    const data: AnalyzeResult = await response.json();
+    setAnalyzeResult(data);
   };
 
-  if (!chatData) {
+  if (!analyzeResult) {
     return <FileUpload onContinue={handleContinue} />;
   }
 
@@ -57,7 +66,7 @@ function App() {
 
       <article id="franja-horaria">
         <h2>Cantidad de mensajes por franja horaria</h2>
-        <FranjaHorariaGraph data={chatData.franjaHoraria} />
+        <FranjaHorariaGraph data={analyzeResult.franjaHoraria} />
       </article>
 
       <article id="emoji-graph">
