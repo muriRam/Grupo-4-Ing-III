@@ -1,8 +1,9 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 interface ParsedMessage {
   hora: number;
   mensaje: string;
+  diaSemana: number;
 }
 
 const MESSAGE_REGEX =
@@ -18,14 +19,19 @@ function to24Hours(hora: number, ampm: string | undefined): number {
 @Injectable()
 export class WhatsappService {
   parseMessages(text: string): ParsedMessage[] {
-    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+    const lines = text.replace(/^﻿/, '').split(/\r?\n/);
     const messages: ParsedMessage[] = [];
 
     for (const line of lines) {
       const match = line.match(MESSAGE_REGEX);
       if (match) {
-        const [, , , , hour, , ampm, , mensaje] = match;
-        messages.push({ hora: to24Hours(parseInt(hour), ampm), mensaje });
+        const [, day, month, year, hour, , ampm, , mensaje] = match;
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        messages.push({
+          hora: to24Hours(parseInt(hour), ampm),
+          mensaje,
+          diaSemana: (date.getDay() + 6) % 7,
+        });
         continue;
       }
 
@@ -67,7 +73,8 @@ export class WhatsappService {
     const arr = Array.from(freq.entries()).map(([text, count]) => ({ text, count }));
     arr.sort((a, b) => b.count - a.count);
     return arr.slice(0, 50);
-    
+  }
+
   getEmojisMasUsados(text: string): { emoji: string; count: number }[] {
     const messages = this.parseMessages(text);
     const emojiRegex = /\p{Extended_Pictographic}/gu;
@@ -86,5 +93,14 @@ export class WhatsappService {
       .map(([emoji, count]) => ({ emoji, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
+  }
+
+  getDiasSemana(text: string): number[] {
+    const messages = this.parseMessages(text);
+    const counts = new Array<number>(7).fill(0);
+    for (const msg of messages) {
+      counts[msg.diaSemana]++;
+    }
+    return counts;
   }
 }

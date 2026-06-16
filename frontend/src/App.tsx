@@ -10,50 +10,44 @@ import {
   WordCloud,
 } from "./components/graphs";
 
-import { buildChatData, type ChatData } from "./utils/whatsappParser";
-
 interface AnalyzeResult {
   franjaHoraria: number[];
   wordCloud: { text: string; count: number }[];
-  emojisMasUsados: { emoji: string; count: number }[];
+  emojis: { emoji: string; count: number }[];
+  diasSemana: number[];
+  mensajesPorUsuario: { usuario: string; cantidad: number }[];
 }
 
 function App() {
-  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(
-    null,
-  );
-  const [chatData, setChatData] = useState<ChatData | null>(null);
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
 
   const handleContinue = async (chatText: string) => {
-    const options = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: chatText }),
-    });
-    const wordCloudResponse = await fetch("http://localhost:3000/whatsapp/word-cloud", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: chatText }),
-    });
-    const data: AnalyzeResult = await response.json();
-    const wordCloudData = await wordCloudResponse.json();
-    setChatData(buildChatData(chatText));
-    setAnalyzeResult({ ...data, wordCloud: wordCloudData });
-  };
-    };
+    const headers = { "Content-Type": "application/json" };
+    const bodyText = JSON.stringify({ text: chatText });
+    const bodyChat = JSON.stringify({ chat: chatText });
 
-    const [resAnalyze, resEmojis] = await Promise.all([
-      fetch("http://localhost:3000/whatsapp/analyze", options),
-      fetch("http://localhost:3000/whatsapp/emojis", options),
+    const [franjaRes, wordCloudRes, emojisRes, diasSemanaRes, mensajesRes] = await Promise.all([
+      fetch("http://localhost:3000/whatsapp/analyze", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/word-cloud", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/emojis", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/dias-semana", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/mensajes-por-usuario", { method: "POST", headers, body: bodyChat }),
     ]);
 
-    const analyzeJson = await resAnalyze.json();
-    const emojisJson = await resEmojis.json();
+    const [franjaData, wordCloudData, emojisData, diasSemanaData, mensajesData] = await Promise.all([
+      franjaRes.json(),
+      wordCloudRes.json(),
+      emojisRes.json(),
+      diasSemanaRes.json(),
+      mensajesRes.json(),
+    ]);
 
-    setChatData(buildChatData(chatText));
     setAnalyzeResult({
-      franjaHoraria: analyzeJson.franjaHoraria,
-      emojisMasUsados: emojisJson.emojisMasUsados,
+      franjaHoraria: franjaData.franjaHoraria,
+      wordCloud: wordCloudData,
+      emojis: emojisData.emojis,
+      diasSemana: diasSemanaData.diasSemana,
+      mensajesPorUsuario: mensajesData.mensajesPorUsuario,
     });
   };
 
@@ -74,7 +68,7 @@ function App() {
 
       <article id="mensajes-por-usuario">
         <h2>Mensajes por usuario</h2>
-        <MensajesPorUsuarioGraph data={chatData!.mensajesPorUsuario} />
+        <MensajesPorUsuarioGraph data={analyzeResult.mensajesPorUsuario} />
       </article>
 
       <article id="franja-horaria">
@@ -84,12 +78,12 @@ function App() {
 
       <article id="emoji-graph">
         <h2>Emojis mas utilizados</h2>
-        <EmojiGraph data={analyzeResult.emojisMasUsados} />
+        <EmojiGraph data={analyzeResult.emojis} />
       </article>
 
       <article id="dias-semana">
         <h2>Cantidad de mensajes por dia de la semana</h2>
-        <DiasSemanaGraph data={chatData!.diasSemana} />
+        <DiasSemanaGraph data={analyzeResult.diasSemana} />
       </article>
     </main>
   );
