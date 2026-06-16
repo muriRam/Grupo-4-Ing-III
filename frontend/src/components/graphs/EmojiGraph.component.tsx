@@ -2,7 +2,11 @@ import { Chart, registerables } from "chart.js";
 import { useEffect, useRef } from "react";
 Chart.register(...registerables);
 
-export const EmojiGraph = () => {
+export const EmojiGraph = ({
+  data,
+}: {
+  data: { emoji: string; count: number }[];
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -10,16 +14,16 @@ export const EmojiGraph = () => {
     const chart = new Chart(canvasRef.current, {
       type: "bar",
       data: {
-        labels: ["😂", "🤣", "😍", "😊", "👍", "👏", "🔥", "😎", "😭", "🎉"],
+        labels: data.map((d) => d.emoji),
         datasets: [
           {
             label: "Cantidad de usos",
-            data: [120, 95, 88, 76, 70, 63, 58, 54, 49, 45],
+            data: data.map((d) => d.count),
           },
         ],
       },
     });
     return () => chart.destroy();
-  }, []);
+  }, [data]);
   return <canvas ref={canvasRef} />;
 };

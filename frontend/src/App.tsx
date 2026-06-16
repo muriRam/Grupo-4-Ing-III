@@ -2,33 +2,54 @@ import { useState } from "react";
 
 import FileUpload from "./FileUpload";
 
-import { EmojiGraph, FranjaHorariaGraph, DiasSemanaGraph, MensajesPorUsuarioGraph, WordCloud } from "./components/graphs";
+import {
+  EmojiGraph,
+  FranjaHorariaGraph,
+  DiasSemanaGraph,
+  MensajesPorUsuarioGraph,
+  WordCloud,
+} from "./components/graphs";
+
+interface AnalyzeResult {
+  franjaHoraria: number[];
+  wordCloud: { text: string; count: number }[];
+  emojis: { emoji: string; count: number }[];
+  diasSemana: number[];
+  mensajesPorUsuario: { usuario: string; cantidad: number }[];
+}
 
 function App() {
   const [showUpload, setShowUpload] = useState(true);
 
-  const sampleWords = [
-    { text: "hola", count: 10 },
-    { text: "grupo", count: 7 },
-    { text: "mensaje", count: 5 },
-    { text: "gracias", count: 9 },
-    { text: "jaja", count: 14 },
-    { text: "buenas", count: 8 },
-    { text: "igual", count: 6 },
-    { text: "okay", count: 11 },
-    { text: "claro", count: 9 },
-    { text: "también", count: 7 },
-    { text: "mañana", count: 6 },
-    { text: "cuando", count: 5 },
-    { text: "bien", count: 13 },
-    { text: "dale", count: 12 },
-    { text: "favor", count: 4 },
-    { text: "noche", count: 6 },
-    { text: "tarde", count: 5 },
-    { text: "espera", count: 4 },
-    { text: "perfecto", count: 8 },
-    { text: "Nico", count: 32 },
-  ];
+  const handleContinue = async (chatText: string) => {
+    const headers = { "Content-Type": "application/json" };
+    const bodyText = JSON.stringify({ text: chatText });
+    const bodyChat = JSON.stringify({ chat: chatText });
+
+    const [franjaRes, wordCloudRes, emojisRes, diasSemanaRes, mensajesRes] = await Promise.all([
+      fetch("http://localhost:3000/whatsapp/analyze", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/word-cloud", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/emojis", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/whatsapp/dias-semana", { method: "POST", headers, body: bodyText }),
+      fetch("http://localhost:3000/mensajes-por-usuario", { method: "POST", headers, body: bodyChat }),
+    ]);
+
+    const [franjaData, wordCloudData, emojisData, diasSemanaData, mensajesData] = await Promise.all([
+      franjaRes.json(),
+      wordCloudRes.json(),
+      emojisRes.json(),
+      diasSemanaRes.json(),
+      mensajesRes.json(),
+    ]);
+
+    setAnalyzeResult({
+      franjaHoraria: franjaData.franjaHoraria,
+      wordCloud: wordCloudData,
+      emojis: emojisData.emojis,
+      diasSemana: diasSemanaData.diasSemana,
+      mensajesPorUsuario: mensajesData.mensajesPorUsuario,
+    });
+  };
 
   if (showUpload) {
     return <FileUpload onContinue={() => setShowUpload(false)} />;
@@ -42,12 +63,12 @@ function App() {
 
       <article id="word-cloud">
         <h2>Nube de palabras</h2>
-        <WordCloud words={sampleWords} />
+        <WordCloud words={analyzeResult.wordCloud} />
       </article>
 
-      <article id="word-cloud">
+      <article id="mensajes-por-usuario">
         <h2>Mensajes por usuario</h2>
-        <MensajesPorUsuarioGraph />
+        <MensajesPorUsuarioGraph data={analyzeResult.mensajesPorUsuario} />
       </article>
       
       <article id="franja-horaria">
@@ -57,12 +78,12 @@ function App() {
 
       <article id="emoji-graph">
         <h2>Emojis mas utilizados</h2>
-        <EmojiGraph />
+        <EmojiGraph data={analyzeResult.emojis} />
       </article>
 
       <article id="dias-semana">
         <h2>Cantidad de mensajes por dia de la semana</h2>
-        <DiasSemanaGraph />
+        <DiasSemanaGraph data={analyzeResult.diasSemana} />
       </article>
     </main>
   );
