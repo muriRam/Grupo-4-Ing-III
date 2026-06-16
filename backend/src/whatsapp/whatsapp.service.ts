@@ -2,6 +2,7 @@
 
 interface ParsedMessage {
   hora: number;
+  mensaje: string;
 }
 
 const MESSAGE_REGEX =
@@ -23,8 +24,8 @@ export class WhatsappService {
     for (const line of lines) {
       const match = line.match(MESSAGE_REGEX);
       if (match) {
-        const [, , , , hour, , ampm] = match;
-        messages.push({ hora: to24Hours(parseInt(hour), ampm) });
+        const [, , , , hour, , ampm, , mensaje] = match;
+        messages.push({ hora: to24Hours(parseInt(hour), ampm), mensaje });
         continue;
       }
 
@@ -41,5 +42,25 @@ export class WhatsappService {
       counts[msg.hora]++;
     }
     return counts;
+  }
+
+  getEmojisMasUsados(text: string): { emoji: string; count: number }[] {
+    const messages = this.parseMessages(text);
+    const emojiRegex = /\p{Extended_Pictographic}/gu;
+    const counts = new Map<string, number>();
+
+    for (const msg of messages) {
+      if (!msg.mensaje) continue;
+      const matches = msg.mensaje.match(emojiRegex);
+      if (!matches) continue;
+      for (const e of matches) {
+        counts.set(e, (counts.get(e) || 0) + 1);
+      }
+    }
+
+    return Array.from(counts.entries())
+      .map(([emoji, count]) => ({ emoji, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
   }
 }
