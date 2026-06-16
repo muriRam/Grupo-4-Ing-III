@@ -9,16 +9,31 @@ import {
   MensajesPorUsuarioGraph,
   WordCloud,
 } from "./components/graphs";
+
 import { buildChatData, type ChatData } from "./utils/whatsappParser";
 
+interface AnalyzeResult {
+  franjaHoraria: number[];
+}
+
 function App() {
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
   const [chatData, setChatData] = useState<ChatData | null>(null);
 
-  const handleContinue = (chatText: string) => {
+  const handleContinue = async (chatText: string) => {
+    const response = await fetch("http://localhost:3000/whatsapp/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: chatText }),
+    });
+    const data: AnalyzeResult = await response.json();
     setChatData(buildChatData(chatText));
+    setAnalyzeResult(data);
   };
 
-  if (!chatData) {
+
+
+  if (!analyzeResult) {
     return <FileUpload onContinue={handleContinue} />;
   }
 
@@ -40,7 +55,7 @@ function App() {
 
       <article id="franja-horaria">
         <h2>Cantidad de mensajes por franja horaria</h2>
-        <FranjaHorariaGraph data={chatData.franjaHoraria} />
+        <FranjaHorariaGraph data={analyzeResult.franjaHoraria} />
       </article>
 
       <article id="emoji-graph">
