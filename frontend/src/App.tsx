@@ -14,10 +14,7 @@ import { buildChatData, type ChatData } from "./utils/whatsappParser";
 
 interface AnalyzeResult {
   franjaHoraria: number[];
-}
-
-interface AnalyzeResult {
-  franjaHoraria: number[];
+  wordCloud: { text: string; count: number }[];
 }
 
 function App() {
@@ -30,9 +27,15 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: chatText }),
     });
+    const wordCloudResponse = await fetch("http://localhost:3000/whatsapp/word-cloud", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: chatText }),
+    });
     const data: AnalyzeResult = await response.json();
+    const wordCloudData = await wordCloudResponse.json();
     setChatData(buildChatData(chatText));
-    setAnalyzeResult(data);
+    setAnalyzeResult({ ...data, wordCloud: wordCloudData });
   };
 
 
@@ -49,12 +52,12 @@ function App() {
 
       <article id="word-cloud">
         <h2>Nube de palabras</h2>
-        <WordCloud words={chatData.wordCloud} />
+        <WordCloud words={analyzeResult.wordCloud} />
       </article>
 
       <article id="mensajes-por-usuario">
         <h2>Mensajes por usuario</h2>
-        <MensajesPorUsuarioGraph data={chatData.mensajesPorUsuario} />
+        <MensajesPorUsuarioGraph data={chatData!.mensajesPorUsuario} />
       </article>
 
       <article id="franja-horaria">
@@ -64,12 +67,12 @@ function App() {
 
       <article id="emoji-graph">
         <h2>Emojis mas utilizados</h2>
-        <EmojiGraph data={chatData.emojisMasUsados} />
+        <EmojiGraph data={chatData!.emojisMasUsados} />
       </article>
 
       <article id="dias-semana">
         <h2>Cantidad de mensajes por dia de la semana</h2>
-        <DiasSemanaGraph data={chatData.diasSemana} />
+        <DiasSemanaGraph data={chatData!.diasSemana} />
       </article>
     </main>
   );
