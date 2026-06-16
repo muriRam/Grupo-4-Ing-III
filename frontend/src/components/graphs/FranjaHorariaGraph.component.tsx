@@ -2,7 +2,11 @@ import { Chart, registerables } from 'chart.js';
 import { useEffect, useRef } from 'react';
 Chart.register(...registerables);
 
-export const FranjaHorariaGraph = () => {
+type Props = {
+    data: number[]
+}
+
+export const FranjaHorariaGraph = ({ data }: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -18,11 +22,11 @@ export const FranjaHorariaGraph = () => {
                 ],
                 datasets: [{
                     label: 'Cantidad de mensajes',
-                    data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 51))
+                    data,
                 }]
             }
         })
         return () => chart.destroy()
-    }, [])
+    }, [data])
     return <canvas ref={canvasRef} />
 }
