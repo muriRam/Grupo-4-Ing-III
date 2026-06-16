@@ -30,6 +30,10 @@ export class WhatsappService {
       }
 
       if (DATE_PREFIX_REGEX.test(line)) continue;
+
+      if (messages.length > 0) {
+        messages[messages.length - 1].mensaje += '\n' + line;
+      }
     }
 
     return messages;
@@ -44,6 +48,26 @@ export class WhatsappService {
     return counts;
   }
 
+  getWordCloud(text: string): { text: string; count: number }[] {
+    const messages = this.parseMessages(text);
+    const allText = messages.map((m) => m.mensaje).join(' ');
+    const cleaned = allText
+      .replace(/[".,!?;:\-()\[\]{}<>\/\\=+*&^%$#@~`|«»—–…¿¡]/g, ' ')
+      .toLowerCase();
+    const words = cleaned.split(/\s+/).map((w) => w.trim());
+
+    const freq = new Map<string, number>();
+    for (const w of words) {
+      if (!w) continue;
+      if (w.length < 3) continue;
+      if (/^\d+$/.test(w)) continue;
+      freq.set(w, (freq.get(w) || 0) + 1);
+    }
+
+    const arr = Array.from(freq.entries()).map(([text, count]) => ({ text, count }));
+    arr.sort((a, b) => b.count - a.count);
+    return arr.slice(0, 50);
+    
   getEmojisMasUsados(text: string): { emoji: string; count: number }[] {
     const messages = this.parseMessages(text);
     const emojiRegex = /\p{Extended_Pictographic}/gu;
