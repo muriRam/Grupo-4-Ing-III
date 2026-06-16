@@ -7,6 +7,22 @@ type FileUploadProps = {
   onContinue: (chatText: string) => void;
 };
 
+const stepText = {
+  android: [
+    "Abrí WhatsApp y tocá el chat que querés exportar",
+    "Tocá los tres puntos en la esquina superior derecha > Más",
+    "Tocá Exportar chat",
+    "Seleccioná Sin archivos multimedia",
+  ],
+  iphone: [
+    "Abrí WhatsApp y el chat que querés exportar > tocá el nombre del chat en la parte superior",
+    "Desplazate hasta el final de la información del chat",
+    "Tocá Exportar chat",
+    "Elegí Sin medios",
+    "Tocá Guardar en Archivos > En mi iPhone y guardalo localmente",
+  ],
+};
+
 function FileUpload({ onContinue }: FileUploadProps) {
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -19,9 +35,7 @@ function FileUpload({ onContinue }: FileUploadProps) {
   };
 
   const handleFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) {
-      return;
-    }
+    if (!files || files.length === 0) return;
     setSelectedFileName(files[0].name);
     setSelectedFile(files[0]);
     setErrorMessage(null);
@@ -45,6 +59,63 @@ function FileUpload({ onContinue }: FileUploadProps) {
     event.preventDefault();
     setDragActive(false);
     handleFiles(event.dataTransfer.files);
+  };
+
+  const extractTextFile = async (file: File): Promise<string | null> => {
+    const text = await file.text();
+    return hasValidWhatsappLine(text) ? text : null;
+  };
+
+  const extractZipFile = async (file: File): Promise<string | null> => {
+    const zip = await JSZip.loadAsync(file);
+    const entries = Object.values(zip.files);
+    const textEntry = entries.find(
+      (entry) => !entry.dir && entry.name.toLowerCase().endsWith(".txt")
+    );
+    if (!textEntry) return null;
+    const text = await textEntry.async("string");
+    return hasValidWhatsappLine(text) ? text : null;
+  };
+
+  const extractChatText = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+    const extension = selectedFile.name.toLowerCase();
+    if (extension.endsWith(".txt")) return extractTextFile(selectedFile);
+    if (extension.endsWith(".zip")) return extractZipFile(selectedFile);
+    return null;
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFileName(null);
+    setSelectedFile(null);
+    setErrorMessage(null);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const onContinueClick = async () => {
+    const chatText = await extractChatText();
+    if (!chatText) {
+      setErrorMessage(
+        "El archivo no parece ser un chat exportado de WhatsApp. Por favor subí un archivo .txt o .zip válido."
+      );
+      return;
+    }
+    onContinue(chatText);
+  };
+
+  // ── Estilos ──────────────────────────────────────────────────────────────
+
+  const wrapperStyle: CSSProperties = {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  };
+
+  const sectionStyle: CSSProperties = {
+    width: "100%",
+    maxWidth: 760,
   };
 
   const dropZoneStyle: CSSProperties = {
@@ -113,130 +184,63 @@ function FileUpload({ onContinue }: FileUploadProps) {
   const instructionsContainerStyle: CSSProperties = {
     display: "flex",
     flexDirection: "row",
-    gap: 20,
+    gap: 16,
     marginTop: 28,
     flexWrap: "wrap",
   };
 
-  const instructionBoxStyle: CSSProperties = {
+  // tarjeta Android: toque verde muy suave
+  const androidCardStyle: CSSProperties = {
     flex: "1 1 320px",
     minWidth: 0,
-    padding: 20,
+    padding: "20px 24px",
     borderRadius: 14,
-    backgroundColor: "#f8fafc",
-    color: "#111827",
-    boxShadow: "0 1px 4px rgba(15, 23, 42, 0.05)",
+    backgroundColor: "#f0fdf4",
+    border: "1px solid #bbf7d0",
   };
 
-  const instructionTitleStyle: CSSProperties = {
+  // tarjeta iPhone: toque azul muy suave
+  const iphoneCardStyle: CSSProperties = {
+    flex: "1 1 320px",
+    minWidth: 0,
+    padding: "20px 24px",
+    borderRadius: 14,
+    backgroundColor: "#eff6ff",
+    border: "1px solid #bfdbfe",
+  };
+
+  const cardTitleStyle: CSSProperties = {
     margin: 0,
-    marginBottom: 12,
-    fontSize: 18,
+    marginBottom: 16,
+    fontSize: 17,
     fontWeight: 700,
+    color: "#111827",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
   };
 
-  const instructionListStyle: CSSProperties = {
+  const stepListStyle: CSSProperties = {
+    listStyle: "none",
     margin: 0,
-    paddingLeft: 20,
-    lineHeight: 1.7,
-    fontSize: 15,
-  };
-
-  const stepText = {
-    android: [
-      "Abrí WhatsApp y tocá el chat que querés exportar",
-      "Tocá los tres puntos en la esquina superior derecha > Más",
-      "Tocá Exportar chat",
-      "Seleccioná Sin archivos multimedia",
-    ],
-    iphone: [
-      "Abrí WhatsApp y el chat que querés exportar > tocá el nombre del chat en la parte superior",
-      "Desplazate hasta el final de la información del chat",
-      "Tocá Exportar chat",
-      "Elegí Sin medios",
-      "Tocá Guardar en Archivos > En mi iPhone y guardalo localmente",
-    ],
-  };
-
-  const extractTextFile = async (file: File): Promise<string | null> => {
-    const text = await file.text();
-    return hasValidWhatsappLine(text) ? text : null;
-  };
-
-  const extractZipFile = async (file: File): Promise<string | null> => {
-    const zip = await JSZip.loadAsync(file);
-    const entries = Object.values(zip.files);
-    const textEntry = entries.find(
-      (entry) => !entry.dir && entry.name.toLowerCase().endsWith(".txt"),
-    );
-
-    if (!textEntry) {
-      return null;
-    }
-
-    const text = await textEntry.async("string");
-    return hasValidWhatsappLine(text) ? text : null;
-  };
-
-  const extractChatText = async (): Promise<string | null> => {
-    if (!selectedFile) {
-      return null;
-    }
-
-    const extension = selectedFile.name.toLowerCase();
-
-    if (extension.endsWith(".txt")) {
-      return extractTextFile(selectedFile);
-    }
-
-    if (extension.endsWith(".zip")) {
-      return extractZipFile(selectedFile);
-    }
-
-    return null;
-  };
-
-  const clearSelectedFile = () => {
-    setSelectedFileName(null);
-    setSelectedFile(null);
-    setErrorMessage(null);
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-  };
-
-  const onContinueClick = async () => {
-    const chatText = await extractChatText();
-
-    if (!chatText) {
-      setErrorMessage(
-        "El archivo no parece ser un chat exportado de WhatsApp. Por favor subi un archivo .txt o .zip valido.",
-      );
-      return;
-    }
-
-    onContinue(chatText);
+    padding: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-    >
-      <section style={{ width: "100%", maxWidth: 760 }}>
+    <main style={wrapperStyle}>
+      <section style={sectionStyle}>
+        {/* Zona de drop */}
         <div style={{ position: "relative" }}>
           <div
             role="button"
             tabIndex={0}
             onClick={openFilePicker}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
                 openFilePicker();
               }
             }}
@@ -251,13 +255,7 @@ function FileUpload({ onContinue }: FileUploadProps) {
                   <span style={{ fontSize: 22 }}>✅</span>
                   <span>Archivo cargado</span>
                 </div>
-                <span
-                  style={{
-                    maxWidth: "100%",
-                    wordBreak: "break-word",
-                    fontSize: 16,
-                  }}
-                >
+                <span style={{ maxWidth: "100%", wordBreak: "break-word", fontSize: 16 }}>
                   {selectedFileName}
                 </span>
               </div>
@@ -266,7 +264,7 @@ function FileUpload({ onContinue }: FileUploadProps) {
             )}
           </div>
 
-          {selectedFileName ? (
+          {selectedFileName && (
             <button
               type="button"
               aria-label="Eliminar archivo seleccionado"
@@ -275,7 +273,7 @@ function FileUpload({ onContinue }: FileUploadProps) {
             >
               ×
             </button>
-          ) : null}
+          )}
         </div>
 
         <input
@@ -286,39 +284,80 @@ function FileUpload({ onContinue }: FileUploadProps) {
           onChange={onInputChange}
         />
 
-        {selectedFileName ? (
+        {selectedFileName && (
           <button type="button" style={buttonStyle} onClick={onContinueClick}>
             Continuar
           </button>
-        ) : null}
+        )}
 
-        {errorMessage ? (
-          <div
-            style={{
-              marginTop: 16,
-              color: "#dc2626",
-              fontSize: 14,
-              lineHeight: 1.5,
-            }}
-          >
+        {errorMessage && (
+          <div style={{ marginTop: 16, color: "#dc2626", fontSize: 14, lineHeight: 1.5 }}>
             {errorMessage}
           </div>
-        ) : null}
+        )}
 
+        {/* Instrucciones en dos columnas */}
         <div style={instructionsContainerStyle}>
-          <div style={instructionBoxStyle}>
-            <h3 style={instructionTitleStyle}>Android</h3>
-            <ol style={instructionListStyle}>
-              {stepText.android.map((step) => (
-                <li key={step}>{step}</li>
+          {/* Android */}
+          <div style={androidCardStyle}>
+            <h3 style={cardTitleStyle}>
+              Android
+            </h3>
+            <ol style={stepListStyle}>
+              {stepText.android.map((step, i) => (
+                <li key={step} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      backgroundColor: "#16a34a",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span style={{ fontSize: 14, lineHeight: 1.6, color: "#1f2937", textAlign: "left" }}>{step}</span>
+                </li>
               ))}
             </ol>
           </div>
-          <div style={instructionBoxStyle}>
-            <h3 style={instructionTitleStyle}>iPhone</h3>
-            <ol style={instructionListStyle}>
-              {stepText.iphone.map((step) => (
-                <li key={step}>{step}</li>
+
+          {/* iPhone */}
+          <div style={iphoneCardStyle}>
+            <h3 style={cardTitleStyle}>
+              iPhone
+            </h3>
+            <ol style={stepListStyle}>
+              {stepText.iphone.map((step, i) => (
+                <li key={step} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      backgroundColor: "#2563eb",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span style={{ fontSize: 14, lineHeight: 1.6, color: "#1f2937", textAlign: "left" }}>{step}</span>
+                </li>
               ))}
             </ol>
           </div>
