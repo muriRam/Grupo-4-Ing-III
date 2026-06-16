@@ -12,5 +12,11 @@ export class WhatsappController {
   @Post('word-cloud')
   getWordCloud(@Body('text') text: string): { text: string; count: number }[] {
     return this.whatsappService.getWordCloud(text);
+
+  @Post('emojis')
+  emojis(@Body('text') text: string): {
+    emojisMasUsados: { emoji: string; count: number }[];
+  } {
+    return { emojisMasUsados: this.whatsappService.getEmojisMasUsados(text) };
   }
 }

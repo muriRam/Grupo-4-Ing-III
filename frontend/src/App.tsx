@@ -15,14 +15,17 @@ import { buildChatData, type ChatData } from "./utils/whatsappParser";
 interface AnalyzeResult {
   franjaHoraria: number[];
   wordCloud: { text: string; count: number }[];
+  emojisMasUsados: { emoji: string; count: number }[];
 }
 
 function App() {
-  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(
+    null,
+  );
   const [chatData, setChatData] = useState<ChatData | null>(null);
 
   const handleContinue = async (chatText: string) => {
-    const response = await fetch("http://localhost:3000/whatsapp/analyze", {
+    const options = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: chatText }),
@@ -37,8 +40,22 @@ function App() {
     setChatData(buildChatData(chatText));
     setAnalyzeResult({ ...data, wordCloud: wordCloudData });
   };
+    };
 
+    const [resAnalyze, resEmojis] = await Promise.all([
+      fetch("http://localhost:3000/whatsapp/analyze", options),
+      fetch("http://localhost:3000/whatsapp/emojis", options),
+    ]);
 
+    const analyzeJson = await resAnalyze.json();
+    const emojisJson = await resEmojis.json();
+
+    setChatData(buildChatData(chatText));
+    setAnalyzeResult({
+      franjaHoraria: analyzeJson.franjaHoraria,
+      emojisMasUsados: emojisJson.emojisMasUsados,
+    });
+  };
 
   if (!analyzeResult) {
     return <FileUpload onContinue={handleContinue} />;
@@ -67,7 +84,7 @@ function App() {
 
       <article id="emoji-graph">
         <h2>Emojis mas utilizados</h2>
-        <EmojiGraph data={chatData!.emojisMasUsados} />
+        <EmojiGraph data={analyzeResult.emojisMasUsados} />
       </article>
 
       <article id="dias-semana">
