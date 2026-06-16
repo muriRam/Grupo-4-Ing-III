@@ -9,4 +9,11 @@ export class WhatsappController {
   analyze(@Body('text') text: string): { franjaHoraria: number[] } {
     return { franjaHoraria: this.whatsappService.getFranjaHoraria(text) };
   }
+
+  @Post('emojis')
+  emojis(@Body('text') text: string): {
+    emojisMasUsados: { emoji: string; count: number }[];
+  } {
+    return { emojisMasUsados: this.whatsappService.getEmojisMasUsados(text) };
+  }
 }
