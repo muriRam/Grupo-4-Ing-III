@@ -16,6 +16,10 @@ interface AnalyzeResult {
   franjaHoraria: number[];
 }
 
+interface AnalyzeResult {
+  franjaHoraria: number[];
+}
+
 function App() {
   const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
   const [chatData, setChatData] = useState<ChatData | null>(null);
